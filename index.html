@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Asian Dub Series &amp; Movies</title>
+<style>
+:root{--bg:#fafaf9;--fg:#1c1917;--mut:#78716c;--line:#e7e5e4;--card:#fff;--acc:#2563eb}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1917;--fg:#f5f5f4;--mut:#a8a29e;--line:#44403c;--card:#292524;--acc:#60a5fa}}
+*{box-sizing:border-box}body{margin:0;font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--fg)}
+header{padding:20px 16px 8px;max-width:1100px;margin:auto}h1{font-size:22px;margin:0 0 4px}p.sub{margin:0;color:var(--mut);font-size:13px}
+.ctl{position:sticky;top:0;background:var(--bg);padding:10px 16px;border-bottom:1px solid var(--line);z-index:2}
+.ctl>div{max-width:1100px;margin:auto;display:flex;flex-wrap:wrap;gap:8px}
+input,select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+input{flex:1 1 220px}main{max-width:1100px;margin:auto;padding:12px 16px 40px}
+.count{color:var(--mut);font-size:13px;margin:4px 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.t{font-weight:600;font-size:16px}.meta{color:var(--mut);font-size:13px;margin:2px 0 6px}
+.tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:99px;border:1px solid var(--line);margin-right:4px}
+.Hoog{border-color:#16a34a;color:#16a34a}.Laag{border-color:#dc2626;color:#dc2626}.Gemiddeld{border-color:#d97706;color:#d97706}
+.row{font-size:14px}.row b{font-weight:500;color:var(--mut)}.note{font-size:13px;color:var(--mut);margin-top:4px}
+</style></head><body>
+<header><h1>Asian Dub Series &amp; Movies</h1>
+<p class="sub">Aziatische live-action series en films met Engelse audio op Netflix, Prime Video, Disney+ en Apple TV+ (NL). Bijgewerkt: <span id="upd"></span>. Bron vooral MyDramaList-fanlijsten; beschikbaarheid in NL kan afwijken.</p></header>
+<div class="ctl"><div>
+<input id="q" type="search" placeholder="Zoek titel, acteur of genre…">
+<select id="type"><option value="">Series + films</option><option>Serie</option><option>Film</option></select>
+<select id="land"><option value="">Alle landen</option></select>
+<select id="plat"><option value="">Alle platforms</option></select>
+<select id="genre"><option value="">Alle genres</option></select>
+<select id="sort"><option value="titel">Sorteer: titel</option><option value="nieuw">Sorteer: nieuwste eerst</option></select>
+</div></div>
+<main><div class="count" id="count"></div><div id="list"></div></main>
+<script>
+function parseCSV(t){const rows=[];let row=[],f='',q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}else if(c=='"')q=true;else if(c==';'){row.push(f);f=''}else if(c=='\n'){row.push(f);rows.push(row);row=[];f=''}else if(c!='\r')f+=c}if(f||row.length){row.push(f);rows.push(row)}const H=rows.shift();return rows.filter(r=>r[0]).map(r=>{const o={};H.forEach((h,i)=>o[h]=r[i]||'');o.Jaar=+o.Jaar;return o})}
+const UPD="20 november 2026";document.getElementById('upd').textContent=UPD;
+fetch('titels.csv',{cache:'no-cache'}).then(r=>r.text()).then(T=>{const D=parseCSV(T);
+const $=id=>document.getElementById(id);
+const fill=(id,vals)=>vals.forEach(v=>{const o=document.createElement('option');o.textContent=v;$(id).appendChild(o)});
+fill('land',[...new Set(D.map(d=>d.Land))].sort());
+fill('plat',[...new Set(D.map(d=>d.Platform))].sort());
+fill('genre',[...new Set(D.flatMap(d=>(d.Genre||'').split(', ').filter(Boolean)))].sort());
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function draw(){
+ const q=$('q').value.toLowerCase();
+ let L=D.filter(d=>(!$('type').value||d.Type==$('type').value)&&(!$('land').value||d.Land==$('land').value)&&(!$('plat').value||d.Platform==$('plat').value)&&(!$('genre').value||(d.Genre||'').includes($('genre').value))&&(!q||[d.Titel,d.Acteurs,d.Genre].join(' ').toLowerCase().includes(q)));
+ L.sort($('sort').value=='nieuw'?(a,b)=>b.Jaar-a.Jaar||a.Titel.localeCompare(b.Titel):(a,b)=>a.Titel.localeCompare(b.Titel));
+ $('count').textContent=L.length+' titels';
+ $('list').innerHTML=L.map(d=>`<div class="card"><div class="t">${esc(d.Titel)}</div>
+<div class="meta">${esc(d.Type)} · ${esc(d.Land)} · ${esc(d.Jaar)}${d.Afleveringen?' · '+esc(d.Afleveringen)+' afl.':''}</div>
+<span class="tag">${esc(d.Platform)}</span><span class="tag ${esc(d['Zekerheid dub'])}">dub: ${esc(d['Zekerheid dub'])}</span>
+${d.Genre?`<div class="row"><b>Genre:</b> ${esc(d.Genre)}</div>`:''}${d.Acteurs?`<div class="row"><b>Acteurs:</b> ${esc(d.Acteurs)}</div>`:''}
+${d.Opmerking?`<div class="note">${esc(d.Opmerking)}</div>`:''}</div>`).join('');
+}
+['q','type','land','plat','genre','sort'].forEach(id=>$(id).addEventListener('input',draw));draw();
+});
+</script></body></html>
