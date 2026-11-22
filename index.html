@@ -30,7 +30,7 @@ input{flex:1 1 220px}main{max-width:1100px;margin:auto;padding:12px 16px 40px}
 <main><div class="count" id="count"></div><div id="list"></div></main>
 <script>
 function parseCSV(t){const rows=[];let row=[],f='',q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}else if(c=='"')q=true;else if(c==';'){row.push(f);f=''}else if(c=='\n'){row.push(f);rows.push(row);row=[];f=''}else if(c!='\r')f+=c}if(f||row.length){row.push(f);rows.push(row)}const H=rows.shift();return rows.filter(r=>r[0]).map(r=>{const o={};H.forEach((h,i)=>o[h]=r[i]||'');o.Jaar=+o.Jaar;return o})}
-const UPD="20 november 2026";document.getElementById('upd').textContent=UPD;
+const UPD="22 november 2026";document.getElementById('upd').textContent=UPD;
 fetch('titels.csv',{cache:'no-cache'}).then(r=>r.text()).then(T=>{const D=parseCSV(T);
 const $=id=>document.getElementById(id);
 const fill=(id,vals)=>vals.forEach(v=>{const o=document.createElement('option');o.textContent=v;$(id).appendChild(o)});
